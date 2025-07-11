@@ -354,3 +354,84 @@ video {
     text-align: center;
   }
 }
+
+/* TTS and Voice Practice Animations */
+.speaking-indicator {
+  animation: speakingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes speakingPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.pronunciation-practice {
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Voice control buttons */
+.voice-control-btn {
+  transition: all 0.2s ease;
+}
+
+.voice-control-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.voice-control-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* TTS Error styling */
+.tts-error {
+  animation: shakeError 0.5s ease-in-out;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Voice selection dropdown */
+.voice-selector {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.voice-selector:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* Speaking animation for avatar */
+.avatar-speaking {
+  animation: avatarSpeak 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes avatarSpeak {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
