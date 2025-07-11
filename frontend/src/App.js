@@ -622,7 +622,42 @@ const QuizComponent = ({ sceneId, onClose }) => {
 };
 
 // TV Series Learning Component
-// TV Series Learning Component - Now as a dedicated page
+// Protected Route Component
+const ProtectedRoute = ({ children, redirectMessage = "Please log in to access this feature" }) => {
+  const { currentUser } = useAuth();
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full text-center">
+          <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl">🔒</span>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">{redirectMessage}</p>
+          <div className="space-y-3">
+            <button
+              onClick={() => window.location.href = '#login'}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => window.location.href = '#signup'}
+              className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700"
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return children;
+};
+
+// Enhanced TV Series Learning Component with Authentication
 const TVSeriesLearning = () => {
   const [selectedSeries, setSelectedSeries] = useState(null);
   const [selectedWord, setSelectedWord] = useState(null);
