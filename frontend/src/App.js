@@ -1532,9 +1532,10 @@ const TuluTutorContent = () => {
                   onChange={(e) => setSelectedVoice(e.target.value)}
                   className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value={VOICE_IDS.turkish_female}>Bella (Turkish Female)</option>
-                  <option value={VOICE_IDS.turkish_male}>Adam (Turkish Male)</option>
-                  <option value={VOICE_IDS.rachel}>Rachel (English Female)</option>
+                  <option value={VOICE_IDS.turkish_female}>Asya (Turkish Female)</option>
+                  <option value={VOICE_IDS.turkish_male}>Doga (Turkish Male)</option>
+                  <option value={VOICE_IDS.aria}>Aria (Multilingual)</option>
+                  <option value={VOICE_IDS.liam}>Liam (Multilingual)</option>
                 </select>
               </div>
             </div>
