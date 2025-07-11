@@ -1410,20 +1410,23 @@ const TuluTutor = () => {
   );
 };
 
-// Tulu Tutor Content Component
+// Tulu Tutor Content Component with TTS
 const TuluTutorContent = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
       type: 'ai',
       content: "Merhaba! 👋 I'm Tulu, your Turkish language tutor. Ask me anything about Turkish words, grammar, pronunciation, or culture!",
-      timestamp: new Date()
+      timestamp: new Date(),
+      showPronunciation: false
     }
   ]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const [selectedVoice, setSelectedVoice] = useState(VOICE_IDS.turkish_female);
   const messagesEndRef = useRef(null);
+  const { speak, stop, isLoading: isSpeaking, error: ttsError, isPlaying } = useTTS();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1441,7 +1444,8 @@ const TuluTutorContent = () => {
       id: Date.now(),
       type: 'user',
       content: currentMessage,
-      timestamp: new Date()
+      timestamp: new Date(),
+      showPronunciation: false
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -1458,7 +1462,8 @@ const TuluTutorContent = () => {
         id: Date.now() + 1,
         type: 'ai',
         content: response.data.answer,
-        timestamp: new Date()
+        timestamp: new Date(),
+        showPronunciation: true // Show pronunciation option for AI responses
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -1469,11 +1474,29 @@ const TuluTutorContent = () => {
         id: Date.now() + 1,
         type: 'ai',
         content: 'Sorry, I couldn\'t process your question. Please try again.',
-        timestamp: new Date()
+        timestamp: new Date(),
+        showPronunciation: false
       };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePronunciationPractice = async (messageContent) => {
+    try {
+      const practiceText = generatePronunciationSentence(messageContent);
+      await speak(practiceText, selectedVoice);
+    } catch (error) {
+      console.error('Error with pronunciation practice:', error);
+    }
+  };
+
+  const handlePlayMessage = async (messageContent) => {
+    try {
+      await speak(messageContent, selectedVoice);
+    } catch (error) {
+      console.error('Error playing message:', error);
     }
   };
 
@@ -1490,40 +1513,117 @@ const TuluTutorContent = () => {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="bg-white rounded-t-lg shadow-lg p-6 border-b border-gray-200">
-            <div className="flex items-center justify-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-2xl">🤖</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-2xl">🤖</span>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-800">Tulu Tutor</h1>
+                  <p className="text-gray-600 text-sm">Your Turkish Language Assistant with Voice Practice</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-800">Tulu Tutor</h1>
-                <p className="text-gray-600 text-sm">Your Turkish Language Assistant</p>
+
+              {/* Voice Selection */}
+              <div className="flex items-center space-x-3">
+                <label className="text-sm font-medium text-gray-700">Voice:</label>
+                <select
+                  value={selectedVoice}
+                  onChange={(e) => setSelectedVoice(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={VOICE_IDS.turkish_female}>Bella (Turkish Female)</option>
+                  <option value={VOICE_IDS.turkish_male}>Adam (Turkish Male)</option>
+                  <option value={VOICE_IDS.rachel}>Rachel (English Female)</option>
+                </select>
               </div>
             </div>
           </div>
+
+          {/* TTS Error Display */}
+          {ttsError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <strong>Voice Error:</strong> {ttsError}
+            </div>
+          )}
 
           {/* Chat Container */}
           <div className="bg-white shadow-lg">
             {/* Messages Area */}
             <div className="h-96 overflow-y-auto p-4 space-y-4 chat-messages">
               {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg chat-bubble ${
-                      message.type === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-none shadow-lg'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-none shadow-md'
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.type === 'user' ? 'text-blue-200' : 'text-gray-500'
-                    }`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                <div key={message.id} className="space-y-2">
+                  <div className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg chat-bubble ${
+                        message.type === 'user'
+                          ? 'bg-blue-600 text-white rounded-br-none shadow-lg'
+                          : 'bg-gray-100 text-gray-800 rounded-bl-none shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <p className="text-sm flex-1">{message.content}</p>
+                        {message.type === 'ai' && (
+                          <div className="flex flex-col space-y-1 ml-2">
+                            <button
+                              onClick={() => handlePlayMessage(message.content)}
+                              disabled={isSpeaking}
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                              title="Play message"
+                            >
+                              {isSpeaking && isPlaying ? '🔊' : '🔉'}
+                            </button>
+                            {isPlaying && (
+                              <button
+                                onClick={stop}
+                                className="text-red-600 hover:text-red-800 transition-colors"
+                                title="Stop audio"
+                              >
+                                ⏹️
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <p className={`text-xs mt-1 ${
+                        message.type === 'user' ? 'text-blue-200' : 'text-gray-500'
+                      }`}>
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* Pronunciation Practice Option */}
+                  {message.type === 'ai' && message.showPronunciation && (
+                    <div className="flex justify-start">
+                      <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-3 max-w-xs lg:max-w-md">
+                        <p className="text-sm text-gray-700 mb-2">
+                          🎤 Would you like to practice pronunciation?
+                        </p>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handlePronunciationPractice(message.content)}
+                            disabled={isSpeaking}
+                            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm transition-colors"
+                          >
+                            {isSpeaking ? 'Speaking...' : 'Yes, Practice!'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setMessages(prev => prev.map(msg => 
+                                msg.id === message.id 
+                                  ? { ...msg, showPronunciation: false }
+                                  : msg
+                              ));
+                            }}
+                            className="px-3 py-1 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 text-sm transition-colors"
+                          >
+                            No, Thanks
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               
@@ -1537,6 +1637,18 @@ const TuluTutorContent = () => {
                       <div className="w-2 h-2 bg-blue-500 rounded-full typing-dot"></div>
                     </div>
                     <span className="text-gray-500 text-sm">Tulu is typing...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Speaking Indicator */}
+              {isSpeaking && isPlaying && (
+                <div className="flex justify-start">
+                  <div className="flex items-center space-x-2 p-3 bg-green-100 rounded-lg max-w-xs shadow-md rounded-bl-none">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+                      <span className="text-white text-sm">🗣️</span>
+                    </div>
+                    <span className="text-green-700 text-sm">Tulu is speaking...</span>
                   </div>
                 </div>
               )}
@@ -1586,6 +1698,13 @@ const TuluTutorContent = () => {
                   {question}
                 </button>
               ))}
+            </div>
+            
+            {/* Voice Practice Info */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                🎤 <strong>Voice Practice:</strong> After each AI response, you can practice Turkish pronunciation with high-quality text-to-speech powered by ElevenLabs!
+              </p>
             </div>
           </div>
         </div>
