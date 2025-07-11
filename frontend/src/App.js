@@ -1743,6 +1743,17 @@ const VisitTurkey = () => {
 function App() {
   const [activeTab, setActiveTab] = useState('Home');
 
+  return (
+    <AuthProvider>
+      <AppContent activeTab={activeTab} setActiveTab={setActiveTab} />
+    </AuthProvider>
+  );
+}
+
+// App Content Component
+function AppContent({ activeTab, setActiveTab }) {
+  const { currentUser } = useAuth();
+
   const renderContent = () => {
     switch (activeTab) {
       case 'Home':
@@ -1755,10 +1766,21 @@ function App() {
         return <TuluStore />;
       case 'Visit Turkey':
         return <VisitTurkey />;
+      case 'Login':
+        return <Login />;
+      case 'Signup':
+        return <Signup />;
       default:
         return <Home />;
     }
   };
+
+  // Auto-redirect after login/signup
+  useEffect(() => {
+    if (currentUser && (activeTab === 'Login' || activeTab === 'Signup')) {
+      setActiveTab('Home');
+    }
+  }, [currentUser, activeTab, setActiveTab]);
 
   return (
     <div className="App">
