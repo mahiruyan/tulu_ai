@@ -132,13 +132,18 @@ async def get_word_meaning(word: str):
 
 @api_router.post("/tutor", response_model=TutorResponse)
 async def ask_tutor(question: TutorQuestion):
+    # Create a new session ID if not provided
+    session_id = question.session_id or str(uuid.uuid4())
+    
+    # Check if we have a valid OpenAI API key first
+    openai_key = os.environ.get('OPENAI_API_KEY')
+    if not openai_key or len(openai_key) < 10:
+        return await provide_fallback_response(question, session_id)
+    
     try:
-        # Create a new session ID if not provided
-        session_id = question.session_id or str(uuid.uuid4())
-        
         # Initialize the Turkish tutor chat
         chat = LlmChat(
-            api_key=os.environ.get('OPENAI_API_KEY'),
+            api_key=openai_key,
             session_id=session_id,
             system_message="""You are a Turkish language tutor named Tulu. You help users learn Turkish words, grammar, pronunciation, and provide context for Turkish language usage. 
 
@@ -155,7 +160,7 @@ Always be encouraging and provide clear, helpful explanations. If someone asks a
         # Create user message
         user_message = UserMessage(text=question.question)
         
-        # Get response from GPT
+        # Get response from GPT with timeout
         response = await chat.send_message(user_message)
         
         # Save the chat to database
@@ -170,24 +175,35 @@ Always be encouraging and provide clear, helpful explanations. If someone asks a
         
     except Exception as e:
         logging.error(f"Error in tutor endpoint: {str(e)}")
-        
-        # Provide a helpful fallback response for common Turkish questions
-        fallback_responses = {
-            "merhaba": "\"Merhaba\" means \"hello\" in Turkish. It's pronounced as [mer-HAH-bah]. You can use it in both formal and informal situations. Example: \"Merhaba, nasılsın?\" (Hello, how are you?)",
-            "teşekkür": "\"Teşekkür ederim\" means \"thank you\" in Turkish. It's pronounced as [teh-shek-KOOR eh-deh-rim]. You can also say just \"teşekkürler\" for \"thanks\". Example: \"Yardımınız için teşekkür ederim.\" (Thank you for your help.)",
-            "nasılsın": "\"Nasılsın?\" means \"How are you?\" in Turkish. It's pronounced as [nah-suhl-SUHN]. The response is usually \"İyiyim, teşekkürler\" (I'm fine, thank you). Example conversation: \"Merhaba, nasılsın?\" - \"İyiyim, sen nasılsın?\"",
-            "günaydın": "\"Günaydın\" means \"good morning\" in Turkish. It's pronounced as [goon-ay-DUHN]. You use this greeting from morning until around noon. Example: \"Günaydın! Bugün nasılsın?\" (Good morning! How are you today?)",
-            "abla": "\"Abla\" means \"older sister\" in Turkish, but it's also used to respectfully address any woman who is older than you. Pronounced as [ah-BLAH]. Example: \"Abla, yardım edebilir misiniz?\" (Sister/Ma'am, can you help me?)",
-        }
-        
-        # Check if the question contains any key words we can help with
-        question_lower = question.question.lower()
-        for key_word, response in fallback_responses.items():
-            if key_word in question_lower:
-                return TutorResponse(answer=response, session_id=session_id)
-        
-        # Generic helpful response
-        helpful_response = """I apologize, but I'm experiencing some technical difficulties right now. However, I'd still love to help you learn Turkish! 
+        return await provide_fallback_response(question, session_id)
+
+async def provide_fallback_response(question: TutorQuestion, session_id: str):
+    """Provide helpful fallback responses for Turkish learning"""
+    
+    # Provide a helpful fallback response for common Turkish questions
+    fallback_responses = {
+        "merhaba": "\"Merhaba\" means \"hello\" in Turkish. It's pronounced as [mer-HAH-bah]. You can use it in both formal and informal situations. Example: \"Merhaba, nasılsın?\" (Hello, how are you?)",
+        "teşekkür": "\"Teşekkür ederim\" means \"thank you\" in Turkish. It's pronounced as [teh-shek-KOOR eh-deh-rim]. You can also say just \"teşekkürler\" for \"thanks\". Example: \"Yardımınız için teşekkür ederim.\" (Thank you for your help.)",
+        "nasılsın": "\"Nasılsın?\" means \"How are you?\" in Turkish. It's pronounced as [nah-suhl-SUHN]. The response is usually \"İyiyim, teşekkürler\" (I'm fine, thank you). Example conversation: \"Merhaba, nasılsın?\" - \"İyiyim, sen nasılsın?\"",
+        "günaydın": "\"Günaydın\" means \"good morning\" in Turkish. It's pronounced as [goon-ay-DUHN]. You use this greeting from morning until around noon. Example: \"Günaydın! Bugün nasılsın?\" (Good morning! How are you today?)",
+        "abla": "\"Abla\" means \"older sister\" in Turkish, but it's also used to respectfully address any woman who is older than you. Pronounced as [ah-BLAH]. Example: \"Abla, yardım edebilir misiniz?\" (Sister/Ma'am, can you help me?)",
+        "hello": "To say \"hello\" in Turkish, you say \"Merhaba\" [mer-HAH-bah]. It's the most common greeting used any time of day!",
+        "thank you": "To say \"thank you\" in Turkish, you say \"Teşekkür ederim\" [teh-shek-KOOR eh-deh-rim] or simply \"Teşekkürler\" [teh-shek-kur-LER].",
+        "good morning": "\"Good morning\" in Turkish is \"Günaydın\" [goon-ay-DUHN]. You can use this until around noon.",
+        "how are you": "\"How are you?\" in Turkish is \"Nasılsın?\" [nah-suhl-SUHN] for informal situations, or \"Nasılsınız?\" [nah-suhl-suh-NUHZ] for formal situations.",
+        "grammar": "Turkish grammar has some unique features! Word order is typically Subject-Object-Verb (SOV). Turkish uses agglutination - adding suffixes to words to change meaning. Would you like to know about a specific grammar topic?",
+        "pronunciation": "Turkish pronunciation is quite regular! Each letter typically has one sound. The stress is usually on the last syllable. Some key sounds: 'ş' sounds like 'sh', 'ç' sounds like 'ch', 'ğ' lengthens the previous vowel.",
+        "learn": "Great question! To learn Turkish effectively: 1) Start with basic greetings and common phrases, 2) Practice with our TV series section, 3) Focus on pronunciation, 4) Learn word patterns and suffixes. Turkish is logical once you understand the patterns!"
+    }
+    
+    # Check if the question contains any key words we can help with
+    question_lower = question.question.lower()
+    for key_word, response in fallback_responses.items():
+        if key_word in question_lower:
+            return TutorResponse(answer=response, session_id=session_id)
+    
+    # Generic helpful response
+    helpful_response = """Merhaba! 👋 I'm Tulu, your Turkish language tutor. I'm here to help you learn Turkish! 
 
 Here are some common Turkish phrases to get you started:
 
@@ -205,9 +221,11 @@ Here are some common Turkish phrases to get you started:
 - **Nasılsın?** [nah-suhl-SUHN] = How are you?
 - **Adın ne?** [ah-DUHN neh] = What's your name?
 
-Try asking me about any of these Turkish words or phrases, and I'll do my best to help! You can also explore our TV series section to learn Turkish through authentic dialogue."""
-        
-        return TutorResponse(answer=helpful_response, session_id=session_id)
+Try asking me about any Turkish word, phrase, or grammar topic! You can also explore our TV series section to learn Turkish through authentic dialogue from popular Turkish shows.
+
+What would you like to learn about Turkish today? 🎯"""
+    
+    return TutorResponse(answer=helpful_response, session_id=session_id)
 
 @api_router.get("/tutor/history/{session_id}")
 async def get_tutor_history(session_id: str):
