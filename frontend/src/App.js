@@ -309,17 +309,17 @@ const TuluTutor = () => {
           {/* Chat Container */}
           <div className="bg-white shadow-lg">
             {/* Messages Area */}
-            <div className="h-96 overflow-y-auto p-4 space-y-4" style={{ scrollbarWidth: 'thin' }}>
+            <div className="h-96 overflow-y-auto p-4 space-y-4 chat-messages">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg chat-bubble ${
                       message.type === 'user'
-                        ? 'bg-blue-600 text-white rounded-br-none'
-                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                        ? 'bg-blue-600 text-white rounded-br-none shadow-lg'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-none shadow-md'
                     }`}
                   >
                     <p className="text-sm">{message.content}</p>
@@ -335,7 +335,14 @@ const TuluTutor = () => {
               {/* Typing Indicator */}
               {isLoading && (
                 <div className="flex justify-start">
-                  <TypingIndicator />
+                  <div className="flex items-center space-x-2 p-3 bg-gray-100 rounded-lg max-w-xs shadow-md rounded-bl-none">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full typing-dot"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full typing-dot"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full typing-dot"></div>
+                    </div>
+                    <span className="text-gray-500 text-sm">Tulu is typing...</span>
+                  </div>
                 </div>
               )}
               
@@ -350,13 +357,13 @@ const TuluTutor = () => {
                   value={currentMessage}
                   onChange={(e) => setCurrentMessage(e.target.value)}
                   placeholder="Ask about Turkish words, grammar, or culture..."
-                  className="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="flex-1 p-3 border border-gray-300 rounded-full chat-input focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={isLoading || !currentMessage.trim()}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed send-button"
                 >
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
