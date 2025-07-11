@@ -1115,7 +1115,10 @@ const Signup = () => {
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Already have an account?{' '}
-            <button className="text-purple-600 hover:underline">
+            <button
+              onClick={() => window.location.href = '#login'}
+              className="text-purple-600 hover:underline"
+            >
               Sign in here
             </button>
           </p>
