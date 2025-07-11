@@ -1064,28 +1064,82 @@ const Signup = () => {
 
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
+  const { currentUser, logout } = useAuth();
   const tabs = ['Home', 'Learn with TV Series', 'Tulu Tutor', 'Tulu Store', 'Visit Turkey'];
   
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setActiveTab('Home');
+    } catch (error) {
+      console.error('Failed to log out:', error);
+    }
+  };
+
   return (
     <nav className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white text-2xl font-bold">
           🇹🇷 Tulu
         </div>
-        <div className="flex space-x-4 overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
-                activeTab === tab
-                  ? 'bg-white text-blue-600 shadow-lg'
-                  : 'text-white hover:bg-white hover:bg-opacity-20'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        
+        <div className="flex items-center space-x-4">
+          {/* Navigation Tabs */}
+          <div className="flex space-x-4 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                  activeTab === tab
+                    ? 'bg-white text-blue-600 shadow-lg'
+                    : 'text-white hover:bg-white hover:bg-opacity-20'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Authentication Section */}
+          <div className="flex items-center space-x-3 border-l border-white/20 pl-4">
+            {currentUser ? (
+              <div className="flex items-center space-x-3">
+                <div className="text-white text-sm">
+                  Welcome, <span className="font-semibold">{currentUser.displayName || currentUser.email.split('@')[0]}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-white/20 text-white px-3 py-1 rounded-lg hover:bg-white/30 transition-colors text-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setActiveTab('Login')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                    activeTab === 'Login'
+                      ? 'bg-white text-blue-600'
+                      : 'text-white hover:bg-white/20'
+                  }`}
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setActiveTab('Signup')}
+                  className={`px-3 py-1 rounded-lg text-sm font-medium transition-all ${
+                    activeTab === 'Signup'
+                      ? 'bg-white text-purple-600'
+                      : 'text-white hover:bg-white/20'
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
