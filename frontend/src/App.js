@@ -206,88 +206,184 @@ const Home = () => {
 
 // Tulu Tutor Component
 const TuluTutor = () => {
-  const [question, setQuestion] = useState('');
-  const [answer, setAnswer] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      id: 1,
+      type: 'ai',
+      content: "Merhaba! 👋 I'm Tulu, your Turkish language tutor. Ask me anything about Turkish words, grammar, pronunciation, or culture!",
+      timestamp: new Date()
+    }
+  ]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!currentMessage.trim() || isLoading) return;
 
-    setLoading(true);
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: currentMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setCurrentMessage('');
+    setIsLoading(true);
+
     try {
       const response = await axios.post(`${API}/tutor`, {
-        question: question,
+        question: currentMessage,
         session_id: sessionId
       });
       
-      setAnswer(response.data.answer);
+      const aiMessage = {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: response.data.answer,
+        timestamp: new Date()
+      };
+
+      setMessages(prev => [...prev, aiMessage]);
       setSessionId(response.data.session_id);
-      setQuestion('');
     } catch (error) {
       console.error('Error asking tutor:', error);
-      setAnswer('Sorry, I couldn\'t process your question. Please try again.');
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: 'Sorry, I couldn\'t process your question. Please try again.',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  const TypingIndicator = () => (
+    <div className="flex items-center space-x-2 p-3 bg-gray-100 rounded-lg max-w-xs">
+      <div className="flex space-x-1">
+        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+        <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+      </div>
+      <span className="text-gray-500 text-sm">Tulu is typing...</span>
+    </div>
+  );
+
+  const exampleQuestions = [
+    "What does 'abla' mean?",
+    "How do you say 'thank you' in Turkish?",
+    "Explain Turkish sentence structure",
+    "What's the difference between 'var' and 'yok'?"
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
       <div className="container mx-auto p-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h1 className="text-3xl font-bold mb-6 text-center">🤖 Tulu Tutor</h1>
-            <p className="text-gray-600 text-center mb-8">
-              Ask me anything about Turkish language, grammar, or culture!
-            </p>
-            
-            <form onSubmit={handleSubmit} className="mb-6">
-              <div className="flex gap-4">
+          {/* Header */}
+          <div className="bg-white rounded-t-lg shadow-lg p-6 border-b border-gray-200">
+            <div className="flex items-center justify-center space-x-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-2xl">🤖</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">Tulu Tutor</h1>
+                <p className="text-gray-600 text-sm">Your Turkish Language Assistant</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Container */}
+          <div className="bg-white shadow-lg">
+            {/* Messages Area */}
+            <div className="h-96 overflow-y-auto p-4 space-y-4" style={{ scrollbarWidth: 'thin' }}>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                      message.type === 'user'
+                        ? 'bg-blue-600 text-white rounded-br-none'
+                        : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      message.type === 'user' ? 'text-blue-200' : 'text-gray-500'
+                    }`}>
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Typing Indicator */}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <TypingIndicator />
+                </div>
+              )}
+              
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className="border-t border-gray-200 p-4">
+              <form onSubmit={handleSubmit} className="flex space-x-3">
                 <input
                   type="text"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
+                  value={currentMessage}
+                  onChange={(e) => setCurrentMessage(e.target.value)}
                   placeholder="Ask about Turkish words, grammar, or culture..."
-                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 p-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
                 />
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                  disabled={isLoading || !currentMessage.trim()}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {loading ? 'Asking...' : 'Ask'}
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  )}
                 </button>
-              </div>
-            </form>
+              </form>
+            </div>
+          </div>
 
-            {answer && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">Tulu's Answer:</h3>
-                <p className="text-gray-800">{answer}</p>
-              </div>
-            )}
-
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">Example Questions:</h3>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• What does "abla" mean?</li>
-                  <li>• How do you say "thank you" in Turkish?</li>
-                  <li>• Explain Turkish sentence structure</li>
-                  <li>• What's the difference between "var" and "yok"?</li>
-                </ul>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2">Cultural Context:</h3>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Turkish family relationships</li>
-                  <li>• Common Turkish expressions</li>
-                  <li>• Turkish TV show context</li>
-                  <li>• Social customs and etiquette</li>
-                </ul>
-              </div>
+          {/* Quick Questions */}
+          <div className="bg-white rounded-b-lg shadow-lg p-6">
+            <h3 className="font-semibold mb-3 text-gray-800">Quick Questions:</h3>
+            <div className="flex flex-wrap gap-2">
+              {exampleQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentMessage(question)}
+                  className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm transition-colors"
+                  disabled={isLoading}
+                >
+                  {question}
+                </button>
+              ))}
             </div>
           </div>
         </div>
