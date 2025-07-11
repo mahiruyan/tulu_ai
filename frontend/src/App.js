@@ -5,6 +5,249 @@ import axios from "axios";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Quiz data for each scene
+const QUIZ_DATA = {
+  "am_scene1": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'seviyorum' mean?",
+        options: ["I hate", "I love", "I see", "I want"],
+        correct: 1,
+        explanation: "'Seviyorum' means 'I love' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'yasak' mean?",
+        options: ["allowed", "forbidden", "beautiful", "happy"],
+        correct: 1,
+        explanation: "'Yasak' means 'forbidden' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'kalbim' mean?",
+        options: ["my head", "my hand", "my heart", "my house"],
+        correct: 2,
+        explanation: "'Kalbim' means 'my heart' in Turkish."
+      },
+      {
+        id: 4,
+        question: "What does 'dinlemiyor' mean?",
+        options: ["doesn't listen", "doesn't see", "doesn't want", "doesn't know"],
+        correct: 0,
+        explanation: "'Dinlemiyor' means 'doesn't listen' in Turkish."
+      }
+    ]
+  },
+  "am_scene2": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'hanım' mean?",
+        options: ["sir", "madam", "child", "friend"],
+        correct: 1,
+        explanation: "'Hanım' means 'madam' or 'lady' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'davranış' mean?",
+        options: ["behavior", "clothing", "food", "money"],
+        correct: 0,
+        explanation: "'Davranış' means 'behavior' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'ailemize' mean?",
+        options: ["to our house", "to our car", "to our family", "to our work"],
+        correct: 2,
+        explanation: "'Ailemize' means 'to our family' in Turkish."
+      },
+      {
+        id: 4,
+        question: "What does 'zarar' mean?",
+        options: ["help", "harm", "happiness", "health"],
+        correct: 1,
+        explanation: "'Zarar' means 'harm' in Turkish."
+      }
+    ]
+  },
+  "am_scene3": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'dayanamıyorum' mean?",
+        options: ["I can't bear it", "I can't see it", "I can't hear it", "I can't find it"],
+        correct: 0,
+        explanation: "'Dayanamıyorum' means 'I can't bear it' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'acı' mean?",
+        options: ["joy", "pain", "love", "hope"],
+        correct: 1,
+        explanation: "'Acı' means 'pain' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'gitmek' mean?",
+        options: ["to come", "to stay", "to leave", "to sleep"],
+        correct: 2,
+        explanation: "'Gitmek' means 'to leave' or 'to go' in Turkish."
+      }
+    ]
+  },
+  "ks_scene1": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'kaderimsin' mean?",
+        options: ["my friend", "my enemy", "my destiny", "my teacher"],
+        correct: 2,
+        explanation: "'Kaderimsin' means 'you are my destiny' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'anda' mean?",
+        options: ["moment", "hour", "day", "year"],
+        correct: 0,
+        explanation: "'Anda' means 'moment' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'anladım' mean?",
+        options: ["I forgot", "I understood", "I saw", "I heard"],
+        correct: 1,
+        explanation: "'Anladım' means 'I understood' in Turkish."
+      }
+    ]
+  },
+  "ks_scene2": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'evlenmek' mean?",
+        options: ["to work", "to marry", "to travel", "to study"],
+        correct: 1,
+        explanation: "'Evlenmek' means 'to marry' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'başkasına' mean?",
+        options: ["to myself", "to you", "to someone else", "to us"],
+        correct: 2,
+        explanation: "'Başkasına' means 'to someone else' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'ait' mean?",
+        options: ["lost", "found", "belongs", "broken"],
+        correct: 2,
+        explanation: "'Ait' means 'belongs' in Turkish."
+      }
+    ]
+  },
+  "ks_scene3": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'feda' mean?",
+        options: ["save", "sacrifice", "protect", "hide"],
+        correct: 1,
+        explanation: "'Feda' means 'sacrifice' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'gücü' mean?",
+        options: ["weakness", "power", "sadness", "beauty"],
+        correct: 1,
+        explanation: "'Gücü' means 'power' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'sevdiğim' mean?",
+        options: ["the one I hate", "the one I love", "the one I know", "the one I see"],
+        correct: 1,
+        explanation: "'Sevdiğim' means 'the one I love' in Turkish."
+      }
+    ]
+  },
+  "my_scene1": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'hazretleri' mean?",
+        options: ["his majesty", "his friend", "his enemy", "his servant"],
+        correct: 0,
+        explanation: "'Hazretleri' means 'his majesty' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'entrika' mean?",
+        options: ["party", "intrigue", "celebration", "meeting"],
+        correct: 1,
+        explanation: "'Entrika' means 'intrigue' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'dikkatli' mean?",
+        options: ["careless", "careful", "happy", "sad"],
+        correct: 1,
+        explanation: "'Dikkatli' means 'careful' in Turkish."
+      }
+    ]
+  },
+  "my_scene2": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'güçlü' mean?",
+        options: ["weak", "powerful", "small", "quiet"],
+        correct: 1,
+        explanation: "'Güçlü' means 'powerful' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'kimse' mean?",
+        options: ["everyone", "someone", "no one", "anyone"],
+        correct: 2,
+        explanation: "'Kimse' means 'no one' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'karşı' mean?",
+        options: ["with", "against", "for", "without"],
+        correct: 1,
+        explanation: "'Karşı' means 'against' in Turkish."
+      }
+    ]
+  },
+  "my_scene3": {
+    questions: [
+      {
+        id: 1,
+        question: "What does 'ferman' mean?",
+        options: ["letter", "decree", "book", "map"],
+        correct: 1,
+        explanation: "'Ferman' means 'decree' in Turkish."
+      },
+      {
+        id: 2,
+        question: "What does 'imzalamak' mean?",
+        options: ["to read", "to write", "to sign", "to speak"],
+        correct: 2,
+        explanation: "'İmzalamak' means 'to sign' in Turkish."
+      },
+      {
+        id: 3,
+        question: "What does 'adalet' mean?",
+        options: ["injustice", "justice", "peace", "war"],
+        correct: 1,
+        explanation: "'Adalet' means 'justice' in Turkish."
+      }
+    ]
+  }
+};
+
 // Turkish TV Series data
 const TV_SERIES_DATA = [
   {
