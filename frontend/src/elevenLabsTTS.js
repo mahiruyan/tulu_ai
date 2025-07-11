@@ -4,9 +4,10 @@ const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 
 // Voice IDs for Turkish-compatible voices
 export const VOICE_IDS = {
-  turkish_female: 'EXAVITQu4vr4fGVs5iCx', // Bella (supports Turkish)
-  turkish_male: 'pNInz6obpgDQGcFmaJgB', // Adam (supports Turkish)
-  rachel: '21m00Tcm4TlvDq8ikWAM' // Rachel (English, fallback)
+  turkish_female: 'mohCpqeo3bXb0EzBQ9C3', // Asya Aydın Özkan (Native Turkish Female)
+  turkish_male: 'IuRRIAcbQK5AQk1XevPj', // Doga (Native Turkish Male)
+  aria: '9BWtsMINqrJLrRacOk9x', // Aria (Multilingual with Turkish support)
+  liam: 'TX3LPaxmHKxFdv7VOQHJ' // Liam (Multilingual with Turkish support)
 };
 
 export async function generateSpeech(text, voiceId = VOICE_IDS.turkish_female) {
