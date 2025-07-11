@@ -914,9 +914,6 @@ function App() {
     <div className="App">
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       {renderContent()}
-      
-      {/* TV Series Learning Section */}
-      <TVSeriesLearning />
     </div>
   );
 }
