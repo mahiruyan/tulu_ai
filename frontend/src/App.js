@@ -1391,8 +1391,19 @@ const Home = () => {
   );
 };
 
-// Tulu Tutor Component
+// Tulu Tutor Component with Authentication
 const TuluTutor = () => {
+  const { currentUser } = useAuth();
+
+  return (
+    <ProtectedRoute redirectMessage="Please log in to access the Tulu Tutor AI assistant">
+      <TuluTutorContent />
+    </ProtectedRoute>
+  );
+};
+
+// Tulu Tutor Content Component
+const TuluTutorContent = () => {
   const [messages, setMessages] = useState([
     {
       id: 1,
