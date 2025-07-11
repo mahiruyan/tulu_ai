@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElevenLabs TTS Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .voice-selector {
+            margin: 20px 0;
+        }
+        select, input, button {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 ElevenLabs TTS Test for Tulu</h1>
+        
+        <div class="voice-selector">
+            <label for="voice">Select Voice:</label>
+            <select id="voice">
+                <option value="EXAVITQu4vr4fGVs5iCx">Bella (Turkish Female)</option>
+                <option value="pNInz6obpgDQGcFmaJgB">Adam (Turkish Male)</option>
+                <option value="21m00Tcm4TlvDq8ikWAM">Rachel (English Female)</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="text">Text to speak:</label><br>
+            <input type="text" id="text" value="Merhaba! Türkçe öğrenmeye devam edelim." style="width: 100%; margin: 10px 0;">
+        </div>
+
+        <div>
+            <button onclick="testTTS()">🔊 Test ElevenLabs TTS</button>
+            <button onclick="stopAudio()">⏹️ Stop Audio</button>
+        </div>
+
+        <div id="status"></div>
+
+        <div style="margin-top: 30px;">
+            <h3>Turkish Test Phrases:</h3>
+            <button onclick="speakText('Merhaba! Nasılsınız?')">Merhaba! Nasılsınız?</button><br>
+            <button onclick="speakText('Türkçe öğrenmek çok güzel.')">Türkçe öğrenmek çok güzel.</button><br>
+            <button onclick="speakText('Teşekkür ederim.')">Teşekkür ederim.</button><br>
+            <button onclick="speakText('İyi akşamlar!')">İyi akşamlar!</button>
+        </div>
+    </div>
+
+    <script>
+        const ELEVENLABS_API_KEY = 'sk_b44d4397ce07949e667b93fc588bfd55d3837c4345e4694e';
+        const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
+        
+        let currentAudio = null;
+
+        function showStatus(message, type = 'loading') {
+            const status = document.getElementById('status');
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+        }
+
+        async function generateSpeech(text, voiceId) {
+            try {
+                showStatus('🔄 Generating speech with ElevenLabs...', 'loading');
+                
+                const response = await fetch(`${ELEVENLABS_API_URL}/${voiceId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'audio/mpeg',
+                        'Content-Type': 'application/json',
+                        'xi-api-key': ELEVENLABS_API_KEY
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        model_id: 'eleven_monolingual_v1',
+                        voice_settings: {
+                            stability: 0.5,
+                            similarity_boost: 0.5,
+                            style: 0.0,
+                            use_speaker_boost: true
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+                }
+
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                showStatus('✅ Speech generated successfully! Playing audio...', 'success');
+                return audioUrl;
+            } catch (error) {
+                showStatus(`❌ Error: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        function playAudio(audioUrl) {
+            stopAudio(); // Stop any current audio
+            
+            currentAudio = new Audio(audioUrl);
+            
+            currentAudio.addEventListener('ended', () => {
+                URL.revokeObjectURL(audioUrl);
+                showStatus('🎵 Audio playback completed', 'success');
+                currentAudio = null;
+            });
+
+            currentAudio.addEventListener('error', (e) => {
+                console.error('Audio playback error:', e);
+                URL.revokeObjectURL(audioUrl);
+                showStatus('❌ Audio playback failed', 'error');
+                currentAudio = null;
+            });
+
+            currentAudio.play().catch(error => {
+                console.error('Error playing audio:', error);
+                URL.revokeObjectURL(audioUrl);
+                showStatus('❌ Could not play audio', 'error');
+            });
+        }
+
+        function stopAudio() {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+                showStatus('⏹️ Audio stopped', 'success');
+            }
+        }
+
+        async function testTTS() {
+            const text = document.getElementById('text').value;
+            const voiceId = document.getElementById('voice').value;
+            
+            if (!text.trim()) {
+                showStatus('❌ Please enter some text to speak', 'error');
+                return;
+            }
+
+            try {
+                const audioUrl = await generateSpeech(text, voiceId);
+                playAudio(audioUrl);
+            } catch (error) {
+                console.error('TTS Test failed:', error);
+            }
+        }
+
+        function speakText(text) {
+            document.getElementById('text').value = text;
+            testTTS();
+        }
+
+        // Test API connectivity on load
+        window.addEventListener('load', () => {
+            showStatus('🚀 ElevenLabs TTS Test Ready! Try speaking some Turkish phrases.', 'success');
+        });
+    </script>
+</body>
+</html>
