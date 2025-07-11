@@ -621,9 +621,12 @@ const QuizComponent = ({ sceneId, onClose }) => {
 };
 
 // TV Series Learning Component
+// TV Series Learning Component - Now as a dedicated page
 const TVSeriesLearning = () => {
+  const [selectedSeries, setSelectedSeries] = useState(null);
   const [selectedWord, setSelectedWord] = useState(null);
   const [wordData, setWordData] = useState(null);
+  const [activeQuiz, setActiveQuiz] = useState(null);
 
   const handleWordClick = (word) => {
     const cleanWord = word.toLowerCase().replace(/[.,!?]/g, '');
@@ -646,66 +649,144 @@ const TVSeriesLearning = () => {
     }
   };
 
-  return (
-    <div className="py-16 bg-gray-50">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">🎬 Learn Turkish with TV Series</h2>
-          <p className="text-xl text-gray-600">Master Turkish through authentic scenes from popular Turkish dramas</p>
-        </div>
+  const handleTakeQuiz = (sceneId) => {
+    setActiveQuiz(sceneId);
+  };
 
-        {TV_SERIES_DATA.map((series) => (
-          <div key={series.id} className="mb-16">
-            <div className={`bg-gradient-to-r ${series.color} rounded-lg p-6 mb-8`}>
-              <h3 className="text-3xl font-bold text-white mb-2">{series.title}</h3>
-              <p className="text-white text-lg">{series.description}</p>
-            </div>
+  if (!selectedSeries) {
+    // Show series selection cards
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="container mx-auto px-6 py-16">
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-gray-800 mb-4">🎬 Learn Turkish with TV Series</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Master Turkish through authentic scenes from popular Turkish dramas. 
+              Choose your favorite series and start learning!
+            </p>
+          </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {series.scenes.map((scene) => (
-                <div key={scene.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="aspect-video">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${scene.embedId}`}
-                      title={scene.title}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-full"
-                    ></iframe>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h4 className="text-xl font-bold mb-4">{scene.title}</h4>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h5 className="font-semibold mb-3 text-gray-700">Interactive Transcript:</h5>
-                      <div className="text-lg leading-relaxed">
-                        {scene.transcript.map((word, index) => (
-                          <span key={index} className="inline-block">
-                            <span
-                              onClick={() => handleWordClick(word.text)}
-                              className="cursor-pointer hover:bg-yellow-200 hover:underline mr-2 p-1 rounded transition-colors"
-                            >
-                              {word.text}
-                            </span>
-                            {index < scene.transcript.length - 1 && ' '}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-gray-200 text-gray-600">
-                        <strong>Translation:</strong> {scene.transcript.map(word => word.translation).join(' ')}
-                      </div>
-                    </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {TV_SERIES_DATA.map((series) => (
+              <div
+                key={series.id}
+                onClick={() => setSelectedSeries(series)}
+                className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+              >
+                <div className={`h-32 bg-gradient-to-r ${series.color} flex items-center justify-center`}>
+                  <div className="text-white text-6xl">
+                    {series.id === 'ask-i-memnu' ? '💔' : 
+                     series.id === 'kara-sevda' ? '💜' : '👑'}
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">{series.title}</h3>
+                  <p className="text-gray-600 mb-4">{series.description}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">{series.scenes.length} scenes</span>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                      Start Learning
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show selected series scenes
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="container mx-auto px-6 py-8">
+        {/* Header with back button */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={() => setSelectedSeries(null)}
+            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Series Selection</span>
+          </button>
+          
+          <div className={`px-6 py-3 rounded-full bg-gradient-to-r ${selectedSeries.color} text-white`}>
+            <h2 className="text-xl font-bold">{selectedSeries.title}</h2>
+          </div>
+        </div>
+
+        {/* Series description */}
+        <div className="text-center mb-12">
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            {selectedSeries.description}
+          </p>
+        </div>
+
+        {/* Scenes grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+          {selectedSeries.scenes.map((scene) => (
+            <div key={scene.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="aspect-video">
+                <iframe
+                  src={`https://www.youtube.com/embed/${scene.embedId}`}
+                  title={scene.title}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                ></iframe>
+              </div>
+              
+              <div className="p-6">
+                <h4 className="text-xl font-bold mb-4">{scene.title}</h4>
+                
+                {/* Interactive Transcript */}
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <h5 className="font-semibold mb-3 text-gray-700">Interactive Transcript:</h5>
+                  <div className="text-lg leading-relaxed mb-3">
+                    {scene.transcript.map((word, index) => (
+                      <span key={index} className="inline-block">
+                        <span
+                          onClick={() => handleWordClick(word.text)}
+                          className="cursor-pointer hover:bg-yellow-200 hover:underline mr-2 p-1 rounded transition-colors"
+                        >
+                          {word.text}
+                        </span>
+                        {index < scene.transcript.length - 1 && ' '}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="pt-3 border-t border-gray-200 text-gray-600 text-sm">
+                    <strong>Translation:</strong> {scene.transcript.map(word => word.translation).join(' ')}
+                  </div>
+                </div>
+
+                {/* Take Quiz Button */}
+                <button
+                  onClick={() => handleTakeQuiz(scene.id)}
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105"
+                >
+                  🧠 Take Quiz ({QUIZ_DATA[scene.id]?.questions.length || 0} questions)
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Quiz Modal */}
+        {activeQuiz && (
+          <QuizComponent
+            sceneId={activeQuiz}
+            onClose={() => setActiveQuiz(null)}
+          />
+        )}
 
         {/* Word Popup */}
         {selectedWord && wordData && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold">Word Information</h3>
