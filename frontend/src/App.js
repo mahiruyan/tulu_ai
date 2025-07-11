@@ -827,18 +827,20 @@ const TVSeriesLearning = () => {
 
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
+  const tabs = ['Home', 'Learn with TV Series', 'Tulu Tutor', 'Tulu Store', 'Visit Turkey'];
+  
   return (
     <nav className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 shadow-lg">
       <div className="container mx-auto flex justify-between items-center">
         <div className="text-white text-2xl font-bold">
           🇹🇷 Tulu
         </div>
-        <div className="flex space-x-6">
-          {['Home', 'Tulu Tutor', 'Tulu Store', 'Visit Turkey'].map((tab) => (
+        <div className="flex space-x-4 overflow-x-auto">
+          {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
                 activeTab === tab
                   ? 'bg-white text-blue-600 shadow-lg'
                   : 'text-white hover:bg-white hover:bg-opacity-20'
