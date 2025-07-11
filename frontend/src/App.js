@@ -658,7 +658,9 @@ const ProtectedRoute = ({ children, redirectMessage = "Please log in to access t
 };
 
 // Enhanced TV Series Learning Component with Authentication
+// Enhanced TV Series Learning Component with Authentication
 const TVSeriesLearning = () => {
+  const { currentUser } = useAuth();
   const [selectedSeries, setSelectedSeries] = useState(null);
   const [selectedWord, setSelectedWord] = useState(null);
   const [wordData, setWordData] = useState(null);
@@ -686,6 +688,10 @@ const TVSeriesLearning = () => {
   };
 
   const handleTakeQuiz = (sceneId) => {
+    if (!currentUser) {
+      alert('Please log in to take quizzes!');
+      return;
+    }
     setActiveQuiz(sceneId);
   };
 
@@ -700,6 +706,11 @@ const TVSeriesLearning = () => {
               Master Turkish through authentic scenes from popular Turkish dramas. 
               Choose your favorite series and start learning!
             </p>
+            {!currentUser && (
+              <div className="mt-6 bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-lg max-w-2xl mx-auto">
+                📝 <strong>Note:</strong> Quiz features require login. Sign up to track your progress!
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -707,7 +718,7 @@ const TVSeriesLearning = () => {
               <div
                 key={series.id}
                 onClick={() => setSelectedSeries(series)}
-                className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                className="bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl series-card"
               >
                 <div className={`h-32 bg-gradient-to-r ${series.color} flex items-center justify-center`}>
                   <div className="text-white text-6xl">
@@ -759,6 +770,11 @@ const TVSeriesLearning = () => {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {selectedSeries.description}
           </p>
+          {!currentUser && (
+            <div className="mt-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-lg max-w-2xl mx-auto">
+              🔒 <strong>Login required</strong> to take quizzes and track your progress!
+            </div>
+          )}
         </div>
 
         {/* Scenes grid */}
@@ -803,9 +819,18 @@ const TVSeriesLearning = () => {
                 {/* Take Quiz Button */}
                 <button
                   onClick={() => handleTakeQuiz(scene.id)}
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all transform hover:scale-105"
+                  className={`w-full py-3 rounded-lg font-semibold transition-all transform hover:scale-105 ${
+                    currentUser
+                      ? 'bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                  disabled={!currentUser}
                 >
-                  🧠 Take Quiz ({QUIZ_DATA[scene.id]?.questions.length || 0} questions)
+                  {currentUser ? (
+                    <>🧠 Take Quiz ({QUIZ_DATA[scene.id]?.questions.length || 0} questions)</>
+                  ) : (
+                    <>🔒 Quiz (Login Required)</>
+                  )}
                 </button>
               </div>
             </div>
