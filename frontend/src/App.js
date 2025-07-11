@@ -855,7 +855,7 @@ const Navigation = ({ activeTab, setActiveTab }) => {
   );
 };
 
-// Home Component - Main Learning Interface
+// Home Component - Cleaned up version
 const Home = () => {
   const [scenes, setScenes] = useState([]);
   const [selectedScene, setSelectedScene] = useState(null);
@@ -923,7 +923,7 @@ const Home = () => {
       <div className="container mx-auto p-6">
         {/* Scene Selection */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Choose a Scene</h2>
+          <h2 className="text-2xl font-bold mb-4">Practice with Sample Scenes</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {scenes.map((scene) => (
               <button
@@ -984,6 +984,20 @@ const Home = () => {
             </div>
           </div>
         )}
+
+        {/* Call to Action for TV Series */}
+        <div className="mt-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-8 text-white text-center">
+          <h2 className="text-3xl font-bold mb-4">Ready for More Advanced Learning?</h2>
+          <p className="text-lg mb-6">
+            Explore our complete Turkish TV series collection with interactive quizzes and comprehensive lessons!
+          </p>
+          <button
+            onClick={() => window.location.href = '#tv-series'}
+            className="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+          >
+            🎬 Explore TV Series Collection
+          </button>
+        </div>
 
         {/* Word Popup */}
         {selectedWord && wordData && (
