@@ -474,6 +474,152 @@ const EXTENDED_TURKISH_WORDS = {
   "memnun": { meaning: "pleased/happy", pronunciation: "mem-nun", example: "Memnun oldum." }
 };
 
+// Quiz Component
+const QuizComponent = ({ sceneId, onClose }) => {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const [score, setScore] = useState(0);
+  const [showExplanation, setShowExplanation] = useState(false);
+  
+  const quiz = QUIZ_DATA[sceneId];
+  
+  if (!quiz) return null;
+  
+  const handleAnswerSelect = (questionId, selectedOption) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: selectedOption
+    }));
+    setShowExplanation(true);
+    
+    // Auto advance to next question after 2 seconds
+    setTimeout(() => {
+      if (currentQuestion < quiz.questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setShowExplanation(false);
+      } else {
+        // Calculate final score
+        const totalCorrect = quiz.questions.reduce((acc, question) => {
+          return acc + (selectedAnswers[question.id] === question.correct ? 1 : 0);
+        }, 0);
+        // Add the current question if correct
+        if (selectedOption === quiz.questions[currentQuestion].correct) {
+          setScore(totalCorrect + 1);
+        } else {
+          setScore(totalCorrect);
+        }
+        setTimeout(() => {
+          setShowResults(true);
+        }, 1000);
+      }
+    }, 2000);
+  };
+  
+  const currentQ = quiz.questions[currentQuestion];
+  const selectedAnswer = selectedAnswers[currentQ.id];
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+        {!showResults ? (
+          <>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Mini Quiz</h3>
+              <button
+                onClick={onClose}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <span>Question {currentQuestion + 1} of {quiz.questions.length}</span>
+                <span>Progress: {Math.round((currentQuestion / quiz.questions.length) * 100)}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${(currentQuestion / quiz.questions.length) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold mb-4">{currentQ.question}</h4>
+              <div className="space-y-3">
+                {currentQ.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswerSelect(currentQ.id, index)}
+                    disabled={selectedAnswer !== undefined}
+                    className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
+                      selectedAnswer === undefined 
+                        ? 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                        : selectedAnswer === index
+                          ? index === currentQ.correct 
+                            ? 'border-green-500 bg-green-50 text-green-800'
+                            : 'border-red-500 bg-red-50 text-red-800'
+                          : index === currentQ.correct
+                            ? 'border-green-500 bg-green-50 text-green-800'
+                            : 'border-gray-200 bg-gray-50'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {showExplanation && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div className="flex items-center mb-2">
+                  {selectedAnswer === currentQ.correct ? (
+                    <span className="text-green-600 font-semibold">✓ Correct!</span>
+                  ) : (
+                    <span className="text-red-600 font-semibold">✗ Incorrect</span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-700">{currentQ.explanation}</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="text-center">
+            <div className="mb-4">
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🎉</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Quiz Complete!</h3>
+              <div className="text-4xl font-bold text-blue-600 mb-2">
+                {score}/{quiz.questions.length}
+              </div>
+              <p className="text-gray-600">
+                {score === quiz.questions.length 
+                  ? "Perfect! You mastered all the words!"
+                  : score >= quiz.questions.length * 0.8
+                    ? "Great job! You're learning well!"
+                    : "Good effort! Keep practicing!"}
+              </p>
+            </div>
+            
+            <div className="space-y-3">
+              <button
+                onClick={onClose}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700"
+              >
+                Continue Learning
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // TV Series Learning Component
 const TVSeriesLearning = () => {
   const [selectedWord, setSelectedWord] = useState(null);
