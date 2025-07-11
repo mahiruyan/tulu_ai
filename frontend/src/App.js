@@ -231,6 +231,130 @@ const EXTENDED_TURKISH_WORDS = {
   "memnun": { meaning: "pleased/happy", pronunciation: "mem-nun", example: "Memnun oldum." }
 };
 
+// TV Series Learning Component
+const TVSeriesLearning = () => {
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [wordData, setWordData] = useState(null);
+
+  const handleWordClick = (word) => {
+    const cleanWord = word.toLowerCase().replace(/[.,!?]/g, '');
+    setSelectedWord(word);
+    
+    if (EXTENDED_TURKISH_WORDS[cleanWord]) {
+      setWordData({
+        word: word,
+        meaning: EXTENDED_TURKISH_WORDS[cleanWord].meaning,
+        pronunciation: EXTENDED_TURKISH_WORDS[cleanWord].pronunciation,
+        example: EXTENDED_TURKISH_WORDS[cleanWord].example
+      });
+    } else {
+      setWordData({
+        word: word,
+        meaning: "Word not found in dictionary",
+        pronunciation: "N/A",
+        example: "N/A"
+      });
+    }
+  };
+
+  return (
+    <div className="py-16 bg-gray-50">
+      <div className="container mx-auto px-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">🎬 Learn Turkish with TV Series</h2>
+          <p className="text-xl text-gray-600">Master Turkish through authentic scenes from popular Turkish dramas</p>
+        </div>
+
+        {TV_SERIES_DATA.map((series) => (
+          <div key={series.id} className="mb-16">
+            <div className={`bg-gradient-to-r ${series.color} rounded-lg p-6 mb-8`}>
+              <h3 className="text-3xl font-bold text-white mb-2">{series.title}</h3>
+              <p className="text-white text-lg">{series.description}</p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {series.scenes.map((scene) => (
+                <div key={scene.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+                  <div className="aspect-video">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${scene.embedId}`}
+                      title={scene.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full"
+                    ></iframe>
+                  </div>
+                  
+                  <div className="p-6">
+                    <h4 className="text-xl font-bold mb-4">{scene.title}</h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <h5 className="font-semibold mb-3 text-gray-700">Interactive Transcript:</h5>
+                      <div className="text-lg leading-relaxed">
+                        {scene.transcript.map((word, index) => (
+                          <span key={index} className="inline-block">
+                            <span
+                              onClick={() => handleWordClick(word.text)}
+                              className="cursor-pointer hover:bg-yellow-200 hover:underline mr-2 p-1 rounded transition-colors"
+                            >
+                              {word.text}
+                            </span>
+                            {index < scene.transcript.length - 1 && ' '}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-200 text-gray-600">
+                        <strong>Translation:</strong> {scene.transcript.map(word => word.translation).join(' ')}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {/* Word Popup */}
+        {selectedWord && wordData && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">Word Information</h3>
+                <button
+                  onClick={() => setSelectedWord(null)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-semibold">Word:</span> {wordData.word}
+                </div>
+                <div>
+                  <span className="font-semibold">Meaning:</span> {wordData.meaning}
+                </div>
+                <div>
+                  <span className="font-semibold">Pronunciation:</span> {wordData.pronunciation}
+                </div>
+                <div>
+                  <span className="font-semibold">Example:</span> {wordData.example}
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedWord(null)}
+                className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
   return (
