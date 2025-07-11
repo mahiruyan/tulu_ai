@@ -2,8 +2,231 @@ import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 import axios from "axios";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Turkish TV Series data
+const TV_SERIES_DATA = [
+  {
+    id: "ask-i-memnu",
+    title: "Aşk-ı Memnu",
+    description: "Learn Turkish through this classic drama about forbidden love",
+    color: "from-red-500 to-pink-500",
+    scenes: [
+      {
+        id: "am_scene1",
+        title: "Romantic Confession",
+        videoUrl: "https://youtu.be/DateteeaXfY?si=nMFYlWqtVvtI-CfR",
+        embedId: "DateteeaXfY",
+        transcript: [
+          { text: "Seni", translation: "You (object)" },
+          { text: "çok", translation: "very much" },
+          { text: "seviyorum", translation: "I love" },
+          { text: "Behlül.", translation: "Behlül." },
+          { text: "Bu", translation: "This" },
+          { text: "aşk", translation: "love" },
+          { text: "yasak", translation: "forbidden" },
+          { text: "ama", translation: "but" },
+          { text: "kalbim", translation: "my heart" },
+          { text: "dinlemiyor.", translation: "doesn't listen." }
+        ]
+      },
+      {
+        id: "am_scene2", 
+        title: "Family Drama",
+        videoUrl: "https://youtu.be/KaTt0wDnI70?si=xGMF5Az3Woyr1eub",
+        embedId: "KaTt0wDnI70",
+        transcript: [
+          { text: "Bihter", translation: "Bihter" },
+          { text: "hanım,", translation: "madam," },
+          { text: "bu", translation: "this" },
+          { text: "davranış", translation: "behavior" },
+          { text: "kabul", translation: "acceptable" },
+          { text: "edilemez.", translation: "cannot be." },
+          { text: "Ailemize", translation: "To our family" },
+          { text: "zarar", translation: "harm" },
+          { text: "veriyorsunuz.", translation: "you are causing." }
+        ]
+      },
+      {
+        id: "am_scene3",
+        title: "Heartbreak",
+        videoUrl: "https://youtu.be/J21L5UyrNGU?si=KJ",
+        embedId: "J21L5UyrNGU",
+        transcript: [
+          { text: "Artık", translation: "Anymore" },
+          { text: "dayanamıyorum.", translation: "I can't bear it." },
+          { text: "Bu", translation: "This" },
+          { text: "acı", translation: "pain" },
+          { text: "çok", translation: "very" },
+          { text: "büyük.", translation: "big." },
+          { text: "Gitmek", translation: "To leave" },
+          { text: "zorundayım.", translation: "I have to." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "kara-sevda",
+    title: "Kara Sevda",
+    description: "Experience intense emotions through this passionate love story",
+    color: "from-purple-500 to-indigo-500",
+    scenes: [
+      {
+        id: "ks_scene1",
+        title: "First Love",
+        videoUrl: "https://youtu.be/sample1",
+        embedId: "sample1",
+        transcript: [
+          { text: "Kemal,", translation: "Kemal," },
+          { text: "seni", translation: "you (object)" },
+          { text: "ilk", translation: "first" },
+          { text: "gördüğüm", translation: "I saw" },
+          { text: "anda", translation: "moment" },
+          { text: "anladım.", translation: "I understood." },
+          { text: "Sen", translation: "You" },
+          { text: "benim", translation: "my" },
+          { text: "kaderimsin.", translation: "destiny." }
+        ]
+      },
+      {
+        id: "ks_scene2",
+        title: "Jealousy",
+        videoUrl: "https://youtu.be/sample2", 
+        embedId: "sample2",
+        transcript: [
+          { text: "Nihan", translation: "Nihan" },
+          { text: "ile", translation: "with" },
+          { text: "evlenmek", translation: "to marry" },
+          { text: "istemiyorum.", translation: "I don't want." },
+          { text: "Kalbim", translation: "My heart" },
+          { text: "başkasına", translation: "to someone else" },
+          { text: "ait.", translation: "belongs." }
+        ]
+      },
+      {
+        id: "ks_scene3",
+        title: "Sacrifice",
+        videoUrl: "https://youtu.be/sample3",
+        embedId: "sample3", 
+        transcript: [
+          { text: "Sevdiğim", translation: "The one I love" },
+          { text: "için", translation: "for" },
+          { text: "her", translation: "every" },
+          { text: "şeyi", translation: "thing" },
+          { text: "feda", translation: "sacrifice" },
+          { text: "ederim.", translation: "I would." },
+          { text: "Bu", translation: "This" },
+          { text: "aşkın", translation: "love's" },
+          { text: "gücü.", translation: "power." }
+        ]
+      }
+    ]
+  },
+  {
+    id: "muhtesem-yuzyil",
+    title: "Magnificent Century",
+    description: "Learn Ottoman Turkish and historical vocabulary",
+    color: "from-yellow-500 to-orange-500",
+    scenes: [
+      {
+        id: "my_scene1",
+        title: "Palace Intrigue",
+        videoUrl: "https://youtu.be/sample4",
+        embedId: "sample4",
+        transcript: [
+          { text: "Sultan", translation: "Sultan" },
+          { text: "Süleyman", translation: "Süleyman" },
+          { text: "hazretleri,", translation: "his majesty," },
+          { text: "sarayda", translation: "in the palace" },
+          { text: "entrika", translation: "intrigue" },
+          { text: "var.", translation: "there is." },
+          { text: "Dikkatli", translation: "Careful" },
+          { text: "olmalısınız.", translation: "you must be." }
+        ]
+      },
+      {
+        id: "my_scene2",
+        title: "Hürrem's Power",
+        videoUrl: "https://youtu.be/sample5",
+        embedId: "sample5",
+        transcript: [
+          { text: "Hürrem", translation: "Hürrem" },
+          { text: "Sultan", translation: "Sultan" },
+          { text: "artık", translation: "now" },
+          { text: "çok", translation: "very" },
+          { text: "güçlü.", translation: "powerful." },
+          { text: "Kimse", translation: "No one" },
+          { text: "ona", translation: "to her" },
+          { text: "karşı", translation: "against" },
+          { text: "gelemez.", translation: "can come." }
+        ]
+      },
+      {
+        id: "my_scene3",
+        title: "Royal Decree",
+        videoUrl: "https://youtu.be/sample6",
+        embedId: "sample6",
+        transcript: [
+          { text: "Padişahım,", translation: "My Sultan," },
+          { text: "ferman", translation: "decree" },
+          { text: "hazır.", translation: "is ready." },
+          { text: "İmzalamak", translation: "To sign" },
+          { text: "için", translation: "for" },
+          { text: "bekliyoruz.", translation: "we wait." },
+          { text: "Adalet", translation: "Justice" },
+          { text: "yerini", translation: "its place" },
+          { text: "bulacak.", translation: "will find." }
+        ]
+      }
+    ]
+  }
+];
+
+// Extended Turkish word dictionary
+const EXTENDED_TURKISH_WORDS = {
+  // Love and emotions
+  "seni": { meaning: "you (object)", pronunciation: "sen-i", example: "Seni çok seviyorum." },
+  "seviyorum": { meaning: "I love", pronunciation: "se-vi-yo-rum", example: "Seni seviyorum." },
+  "aşk": { meaning: "love", pronunciation: "ashk", example: "Aşk acı verir." },
+  "kalbim": { meaning: "my heart", pronunciation: "kal-bim", example: "Kalbim seni seçti." },
+  "acı": { meaning: "pain", pronunciation: "a-juh", example: "Bu acı çok büyük." },
+  "sevdiğim": { meaning: "the one I love", pronunciation: "sev-di-im", example: "Sevdiğim kişi sen." },
+  
+  // Family and relationships
+  "ailemize": { meaning: "to our family", pronunciation: "ai-le-mi-ze", example: "Ailemize hoş geldin." },
+  "hanım": { meaning: "madam/lady", pronunciation: "ha-nım", example: "Ayşe hanım geldi." },
+  "evlenmek": { meaning: "to marry", pronunciation: "ev-len-mek", example: "Evlenmek istiyorum." },
+  
+  // Royal and historical
+  "sultan": { meaning: "sultan", pronunciation: "sul-tan", example: "Sultan sarayda yaşar." },
+  "hazretleri": { meaning: "his majesty", pronunciation: "haz-ret-le-ri", example: "Sultan hazretleri geldi." },
+  "sarayda": { meaning: "in the palace", pronunciation: "sa-ray-da", example: "Sarayda yaşıyorum." },
+  "padişahım": { meaning: "my sultan", pronunciation: "pa-di-sha-hım", example: "Padişahım, emriniz?" },
+  "ferman": { meaning: "decree", pronunciation: "fer-man", example: "Ferman imzalandı." },
+  
+  // Common words
+  "çok": { meaning: "very much", pronunciation: "chok", example: "Çok güzel." },
+  "ama": { meaning: "but", pronunciation: "a-ma", example: "Güzel ama pahalı." },
+  "artık": { meaning: "anymore/now", pronunciation: "ar-tık", example: "Artık gitmek istiyorum." },
+  "için": { meaning: "for", pronunciation: "i-chin", example: "Sen için yaparım." },
+  "ile": { meaning: "with", pronunciation: "i-le", example: "Seninle gelmek istiyorum." },
+  "var": { meaning: "there is", pronunciation: "var", example: "Evde süt var." },
+  "büyük": { meaning: "big", pronunciation: "bü-yük", example: "Büyük bir ev." },
+  "güçlü": { meaning: "powerful", pronunciation: "güch-lü", example: "Çok güçlü bir adam." },
+  "kimse": { meaning: "no one", pronunciation: "kim-se", example: "Kimse bilmiyor." },
+  "adalet": { meaning: "justice", pronunciation: "a-da-let", example: "Adalet için savaşıyorum." },
+  "dikkatli": { meaning: "careful", pronunciation: "dik-kat-li", example: "Dikkatli ol!" },
+  
+  // Existing words from original dictionary
+  "günaydın": { meaning: "good morning", pronunciation: "goo-nay-duhn", example: "Günaydın! Nasılsın?" },
+  "kahvaltı": { meaning: "breakfast", pronunciation: "kah-val-tuh", example: "Kahvaltı yapmak istiyorum." },
+  "merhaba": { meaning: "hello", pronunciation: "mer-ha-ba", example: "Merhaba! Nasılsın?" },
+  "teşekkür": { meaning: "thank you", pronunciation: "teh-shek-kur", example: "Teşekkür ederim!" },
+  "evet": { meaning: "yes", pronunciation: "eh-vet", example: "Evet, doğru." },
+  "abla": { meaning: "older sister", pronunciation: "ab-la", example: "Ablam çok güzel." },
+  "güzel": { meaning: "beautiful/nice", pronunciation: "gue-zel", example: "Bu çok güzel!" },
+  "pahalı": { meaning: "expensive", pronunciation: "pa-ha-luh", example: "Bu çok pahalı." },
+  "indirim": { meaning: "discount", pronunciation: "in-di-rim", example: "Size indirim yapabilirim." },
+  "memnun": { meaning: "pleased/happy", pronunciation: "mem-nun", example: "Memnun oldum." }
+};
 
 // Navigation Component
 const Navigation = ({ activeTab, setActiveTab }) => {
