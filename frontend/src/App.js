@@ -1385,6 +1385,8 @@ function App() {
     switch (activeTab) {
       case 'Home':
         return <Home />;
+      case 'Learn with TV Series':
+        return <TVSeriesLearning />;
       case 'Tulu Tutor':
         return <TuluTutor />;
       case 'Tulu Store':
